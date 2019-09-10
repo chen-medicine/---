@@ -1,0 +1,42 @@
+import requests
+import json
+import xlwt  
+
+company=input('请输入公司代码：')
+num=input('请输入显示页数：')
+url='http://www.cninfo.com.cn/data/project/commonInterface'
+data={
+	'mergerMark': 'sysapi1072',
+	'paramStr': 'scode={};rtype={}'.format(company,num)
+}
+headers={
+	'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
+}
+res=requests.post(url=url,headers=headers,data=data)
+# res.encoding='gbk'
+res_list=res.text
+res_list=json.loads(res_list)
+data=[]
+for res in res_list:
+	time_res=res['TRADEDATE']
+	high=res['F005N']
+	Open=res['F003N']
+	low=res['F006N']
+	Close=res['F002N']
+	volums=res['F004N']
+	data.append([time_res,high,Open,low,Close,volums])
+
+#将数据添加至Excel表格中
+book=xlwt.Workbook(encoding='utf8')
+sheet=book.add_sheet('stock')
+head=['时间','最高','开盘','最低','收盘','交易量']
+for h in range(len(head)):
+	sheet.write(0,h,head[h])
+i=1
+for list in data:
+	j=0
+	for dat in list:
+		sheet.write(i,j,dat)
+		j+=1
+	i+=1
+book.save('data.xls')
